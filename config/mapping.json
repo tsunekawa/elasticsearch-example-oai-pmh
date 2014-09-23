@@ -1,0 +1,66 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "ngram_analyzer": {
+          "tokenizer": "ngram_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "ngram_tokenizer": {
+          "type": "ngram",
+          "min_gram": "2",
+          "max_gram": "2",
+          "token_chars": [
+            "letter",
+            "digit",
+            "punctuation",
+            "whitespace",
+            "symbol"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "record": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string",
+          "analyzer": "ngram_analyzer"
+        },
+        "creator": {
+          "type": "string",
+          "analyzer": "ngram_analyzer"
+        },
+        "subject": {
+          "type": "string",
+          "analyzer": "ngram_analyzer"
+        },
+        "publisher": {
+          "type": "string",
+          "analyzer": "ngram_analyzer"
+        },
+        "language": {
+          "type": "string"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "date": {
+          "type": "date"
+        },
+        "description": {
+          "type": "string"
+        }
+
+      }
+    }
+  }
+}

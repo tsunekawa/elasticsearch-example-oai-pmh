@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+#-*- coding:utf-8 -*-
+require_relative './../config/init'
+
+query = ARGV[0]
+
+client = Elasticsearch::Client.new log: false
+client.transport.reload_connections!
+result =  client.search({
+  index: INDEX_NAME,
+  type: TYPE_NAME,
+  body: {
+    min_score: 0.4,
+    query: {
+      multi_match: {
+        query: query,
+        fields: ["title", "creators", "subjects", "publishers"],
+      }
+    },
+    highlight: {
+      fields: {
+        title: {},
+        creators: {},
+        subjects: {},
+        publishers: {}
+      },
+      pre_tags: [HIGHLIGHT_TAG],
+      post_tags: [HIGHLIGHT_CLOSE]
+    }
+  }
+})
+
+count = result["hits"]["total"]
+items = result["hits"]["hits"].lazy.map do |item|
+  snippet = (item["highlight"] || {}).values.join("...").gsub("\n", "\\n")
+  {:id=>item["_id"], :title=>item["_source"]["title"], :creator=>item["_source"]["creators"], :score=>item["_score"], :snippet=>snippet}
+end
+
+puts "hits: #{count}"
+items.each_with_index do |item, i|
+  puts "#{i}: #{item[:title]} / #{item[:creator].join(";")} (score: #{item[:score]})"
+  puts "\n"
+  puts "  #{item[:snippet]}"
+  puts "\n"
+end

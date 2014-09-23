@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+#-*- coding:utf-8 -*-
+require_relative './../config/init'
+
+if File.exist? MAPPING_JSON then
+  body = YAML.load_file("./config/mapping.json")
+else
+  raise "#{MAPPING_JSON} is missing"
+end
+
+# mapping index
+client = Elasticsearch::Client.new log: true
+client.transport.reload_connections!
+client.indices.put_mapping(index: "ir", type: "record", body:body)

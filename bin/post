@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+#-*- coding:utf-8 -*-
+require_relative './../config/init'
+
+# load markdown files
+def load_posts(dirpath)
+  posts    = Array.new
+
+  Dir.glob(dirpath) do |filepath|
+    # read a markdown file
+    next unless filepath =~ /.*\.xml$/
+    begin
+      record = Record.load_file(filepath)
+    rescue Record::InvalidMetadataError => ex
+      next posts
+    end
+
+    # add a post data
+    posts << record.to_hash
+  end
+
+  posts
+end
+
+posts = load_posts("metadata/**/*.xml")
+
+# index posts
+client = Elasticsearch::Client.new log: true
+client.transport.reload_connections!
+
+posts.each do |post|
+  post[:index] = INDEX_NAME
+  post[:type ] = TYPE_NAME
+  client.index post
+end

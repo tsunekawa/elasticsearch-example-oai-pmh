@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+#-*- coding:utf-8 -*-
+require_relative './../config/init'
+
+def decode(str)
+  str.gsub(/&#x([\da-fA-F]+);/) { [$1].pack('H*').unpack('n*').pack('U') }
+end
+
+formatter = REXML::Formatters::Pretty.new
+
+client = OAI::Client.new OAI_ACCESS_POINT
+# Get the first page of records
+client.list_records.full.each do |record|
+  file_path = "./metadata/#{record.header.identifier.to_s.gsub(":", "-")}.xml"
+  FileUtils.mkdir_p(File.dirname(file_path))
+  unless File.exist? file_path then
+    metadata = record.metadata
+    xml = Nokogiri::XML(decode(metadata.to_s), nil, 'utf-8')
+    File.open(file_path, "w") do |f|
+      f.print xml
+    end
+  end
+end
